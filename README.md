@@ -31,12 +31,21 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ---
 
-### 0. 최초 1회 — 의존성 설치
+### 0. 최초 1회 — 의존성 설치 & DB 초기화
 
 ```bash
 cd my-app
 npm install
 ```
+
+`db.json`은 gitignore 처리되어 있습니다. 최초 1회 루트 디렉토리에서 복사해주세요.
+
+```bash
+# 프로젝트 루트(4th_miniproject/)에서 실행
+copy db.sample.json db.json
+```
+
+> macOS / Linux 환경이라면 `cp db.sample.json db.json`
 
 ### 1. json-server 실행 (터미널 1)
 
