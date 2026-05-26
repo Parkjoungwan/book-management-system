@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { BOOKS_URL } from '../constants/api'
 import CoverGenerator from '../components/book/CoverGenerator'
@@ -21,6 +21,18 @@ export default function BookDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
+
+  // AI 표지 생성기 토글 상태
+  // - 커버 이미지가 있으면 닫힌 채로 시작, 없으면 열린 채로 시작
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
+  const generatorInitialized = useRef(false)
+
+  useEffect(() => {
+    if (book && !generatorInitialized.current) {
+      generatorInitialized.current = true
+      setIsGeneratorOpen(!book.coverImageUrl)
+    }
+  }, [book])
 
   useEffect(() => {
     const load = async () => {
@@ -88,8 +100,23 @@ export default function BookDetailPage() {
             </div>
           )}
 
-          {/* AI 표지 생성기 */}
-          <CoverGenerator book={book} onCoverSaved={handleCoverSaved} />
+          {/* AI 표지 생성기 (토글) */}
+          <div className="generator-toggle">
+            <button
+              className="generator-toggle-btn"
+              onClick={() => setIsGeneratorOpen(prev => !prev)}
+              aria-expanded={isGeneratorOpen}
+            >
+              <span className="generator-toggle-label">
+                <span>✨</span>
+                <span>AI 표지 생성</span>
+              </span>
+              <span className={`generator-toggle-chevron${isGeneratorOpen ? ' open' : ''}`}>▾</span>
+            </button>
+            <div className={`generator-collapse${isGeneratorOpen ? ' open' : ''}`}>
+              <CoverGenerator book={book} onCoverSaved={handleCoverSaved} />
+            </div>
+          </div>
         </div>
 
         {/* 오른쪽: 도서 정보 */}
