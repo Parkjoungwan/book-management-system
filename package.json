@@ -1,0 +1,21 @@
+{
+  "name": "4th_miniproject",
+  "version": "1.0.0",
+  "description": "> AI를 활용한 도서표지 이미지 생성 | KT AIVLE School AI 트랙 미니프로젝트 4차",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Parkjoungwan/4th_miniproject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Parkjoungwan/4th_miniproject/issues"
+  },
+  "homepage": "https://github.com/Parkjoungwan/4th_miniproject#readme"
+}

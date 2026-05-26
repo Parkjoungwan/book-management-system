@@ -197,37 +197,25 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
 
         {/* 생성된 표지 미리보기 */}
         {previewUrl && (
-          <div className="cover-preview-wrap">
-            <img
-              src={previewUrl}
-              alt="생성된 표지 미리보기"
-              className="cover-preview-img"
-            />
-            <div className="cover-preview-actions">
-              <p style={{ fontSize: '0.82rem', color: 'var(--gray-600)', marginBottom: 4 }}>
-                ✅ 표지가 생성되었습니다.<br />저장하시겠습니까?
-              </p>
-              <button
-                className="btn btn-success btn-sm"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? '저장 중...' : '💾 이 표지로 저장'}
-              </button>
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={handleGenerate}
-                disabled={isGenerating || isSaving}
-              >
-                🔄 다시 생성
-              </button>
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => setPreviewUrl(null)}
-                disabled={isSaving}
-              >
-                취소
-              </button>
+          <div className="modal-overlay">
+            <div className="modal-box" onClick={e => e.stopPropagation()}>
+              <img
+                src={previewUrl}
+                alt="생성된 표지 미리보기"
+                className="modal-preview-img"
+              />
+              <div className="modal-actions">
+                <p className="modal-caption">✅ 표지가 생성되었습니다. 저장하시겠습니까?</p>
+                <button className="btn btn-success" onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? '저장 중...' : '💾 이 표지로 저장'}
+                </button>
+                <button className="btn btn-outline" onClick={handleGenerate} disabled={isGenerating || isSaving}>
+                  🔄 다시 생성
+                </button>
+                <button className="btn btn-ghost" onClick={() => setPreviewUrl(null)} disabled={isSaving}>
+                  취소
+                </button>
+              </div>
             </div>
           </div>
         )}

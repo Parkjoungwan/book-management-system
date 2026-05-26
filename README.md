@@ -17,11 +17,41 @@
 
 > **터미널 2개**가 필요합니다.
 
+### ⚠️ Windows PowerShell 사용 시 최초 1회 설정
+
+PowerShell은 기본적으로 `.ps1` 스크립트 실행을 차단하기 때문에 `npm` 명령어가 동작하지 않습니다.
+**PowerShell을 관리자 권한으로 열고** 아래 명령어를 1회 실행해주세요.
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+> 재부팅 후에도 유지되며 다시 설정할 필요 없습니다.
+> PowerShell 대신 **cmd(명령 프롬프트)** 를 사용하면 이 설정 없이도 동작합니다.
+
+---
+
+### 0. 최초 1회 — 의존성 설치 & DB 초기화
+
+```bash
+cd my-app
+npm install
+```
+
+`db.json`은 gitignore 처리되어 있습니다. 최초 1회 루트 디렉토리에서 복사해주세요.
+
+```bash
+# 프로젝트 루트(4th_miniproject/)에서 실행
+copy db.sample.json db.json
+```
+
+> macOS / Linux 환경이라면 `cp db.sample.json db.json`
+
 ### 1. json-server 실행 (터미널 1)
 
 ```bash
-cd C:\Users\User\4th_miniproject
-npx json-server@0.17.4 --watch db.json --port 3000
+cd my-app
+npm run server
 ```
 
 → `http://localhost:3000/books` 접속 확인
@@ -29,7 +59,7 @@ npx json-server@0.17.4 --watch db.json --port 3000
 ### 2. React 개발 서버 실행 (터미널 2)
 
 ```bash
-cd C:\Users\User\4th_miniproject\my-app
+cd my-app
 npm run dev
 ```
 
