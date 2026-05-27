@@ -34,7 +34,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### 0. 최초 1회 — 의존성 설치 & DB 초기화
 
 ```bash
-cd my-app
+cd book-manager
 npm install
 ```
 
@@ -50,7 +50,7 @@ copy db.sample.json db.json
 ### 1. json-server 실행 (터미널 1)
 
 ```bash
-cd my-app
+cd book-manager
 npm run server
 ```
 
@@ -59,7 +59,7 @@ npm run server
 ### 2. React 개발 서버 실행 (터미널 2)
 
 ```bash
-cd my-app
+cd book-manager
 npm run dev
 ```
 
