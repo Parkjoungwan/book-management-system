@@ -39,11 +39,19 @@ export default function BookForm({ initialData = {}, onSubmit, submitLabel = '�
     form.author !== initialForm.author ||
     form.content !== initialForm.content
 
+    //추가
+  const isFormValid =
+    form.title.trim() !== '' &&
+    form.content.trim() !== '' &&
+    form.content.trim().length >= CONTENT_MIN_LENGTH
+
   const validate = () => {
     const errs = {}
     const title = form.title.trim()
     const author = form.author.trim()
     const content = form.content.trim()
+
+
 
     if (!title) errs.title = '제목은 필수 입력 항목입니다.'
     else if (title.length > TITLE_MAX_LENGTH) {
@@ -195,7 +203,7 @@ export default function BookForm({ initialData = {}, onSubmit, submitLabel = '�
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={isSubmitting || !isChanged}
+            disabled={isSubmitting || !isChanged || !isFormValid} //!isFormValid 추가
           >
             {isSubmitting ? '저장 중...' : submitLabel}
           </button>

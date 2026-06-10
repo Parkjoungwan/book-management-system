@@ -21,9 +21,10 @@ public class Book {
     private Long id;
 
     @NotBlank(message = "제목은 필수입니다.")
+    @Column(nullable = false) //추가
     private String title;
 
-    @NotBlank(message = "저자는 필수입니다.")
+//    @NotBlank(message = "저자는 필수입니다.")
     private String author;
 
     @Column(columnDefinition = "TEXT")
