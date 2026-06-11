@@ -66,29 +66,48 @@ export default function BooksPage() {
   }
 
   // 선택한 도서 다중 삭제
-  const handleDeleteSelected = async () => {
-    if (selectedIds.length === 0) {
-      window.alert('삭제할 도서를 선택해주세요.')
-      return
-    }
-
-    const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
-    if (!ok) return
-
-    try {
-      for (const id of selectedIds) {
-        const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
-        if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
+    const handleDeleteSelected = async () => {
+      if (selectedIds.length === 0) {
+        window.alert('삭제할 도서를 선택해주세요.')
+        return
       }
 
-      setBooks(prev => prev.filter(book => !selectedIds.includes(book.id)))
-      setSelectedIds([])
+      const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
+      if (!ok) return
 
-      window.alert('선택한 도서가 삭제되었습니다.')
-    } catch (err) {
-      setError(err.message)
+      try {
+        for (const id of selectedIds) {
+          const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
+          if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
+        }
+
+        const nextTotalElements = totalElements - selectedIds.length
+        const nextTotalPages = Math.ceil(nextTotalElements / pageSize)
+        const nextPage = Math.min(page, Math.max(nextTotalPages - 1, 0))
+
+        setSelectedIds([])
+        setTotalElements(nextTotalElements)
+        setTotalPages(nextTotalPages)
+
+        if (nextPage !== page) {
+          setPage(nextPage)
+        } else {
+          const res = await fetch(
+            `${BOOKS_URL}?page=${nextPage}&size=${pageSize}&sort=createdAt,desc`
+          )
+          if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
+          const data = await res.json()
+
+          setBooks(data.content)
+          setTotalPages(data.totalPages)
+          setTotalElements(data.totalElements)
+        }
+
+        window.alert('선택한 도서가 삭제되었습니다.')
+      } catch (err) {
+        setError(err.message)
+      }
     }
-  }
 
   return (
     <main className="page">
