@@ -69,10 +69,18 @@ public class BookCoverService {
     @Transactional
     public void deleteCover(Long bookId, Long coverId) {
         if (!bookRepository.existsById(bookId)) throw new BookNotFoundException(bookId);
-        BookCover cover = bookCoverRepository.findById(coverId)
+        BookCover cover = bookCoverRepository.findById(coverId)     // coverId 존재 확인
                 .orElseThrow(() -> new BookCoverNotFoundException(coverId));
+
+        // 소유권 검증 — setActiveCover와 동일한 패턴 적용 (버그 수정)
+        if (!cover.getBook().getId().equals(bookId)) {
+            throw new IllegalArgumentException(
+                    "표지 id " + coverId + "는 도서 id " + bookId + "에 속하지 않습니다.");
+        }
+
+        // 대표 표지 삭제 시 Book.coverImageUrl null 초기화
         if (Boolean.TRUE.equals(cover.getIsActive())) {
-            Book book = bookRepository.findById(bookId)
+            Book book = bookRepository.findById(bookId)         // bookId 존재 확인
                     .orElseThrow(() -> new BookNotFoundException(bookId));
             book.setCoverImageUrl(null);
             bookRepository.save(book);
