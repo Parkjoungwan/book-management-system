@@ -81,7 +81,34 @@ npm run dev
 
 ![API 명세서](docs/api_spec.svg)
 
-> \* 필수 필드  ? 선택 필드 · 오류 응답: `404` 도서/표지 없음 · `400` 검증 실패 · `400` 소유권 불일치
+**필드 표기:** `*` 필수 필드 · `?` 선택 필드 (생략 가능)
+
+### 오류 응답
+
+요청이 실패하면 아래 형태의 JSON을 상태 코드와 함께 반환합니다.
+
+```json
+{
+  "status": 404,
+  "message": "도서를 찾을 수 없습니다. id: 99",
+  "errors": null
+}
+```
+
+| 상태 | 발생 상황 | 예외 | 비고 |
+|------|-----------|------|------|
+| `404` | 존재하지 않는 도서/표지 id로 조회·수정·삭제 | `BookNotFoundException`, `BookCoverNotFoundException` | — |
+| `400` | 필수 필드 누락 등 입력값 검증 실패 | `MethodArgumentNotValidException` | 실패한 필드별 메시지를 `errors` 맵에 담아 반환 |
+| `400` | 다른 도서에 속한 표지를 활성화·삭제 시도 (소유권 불일치) | `IllegalArgumentException` | `coverId`가 경로의 `bookId`에 속하지 않을 때 |
+
+> **검증 실패(`400`)** 예시 — `errors`에 필드별 사유 포함:
+> ```json
+> {
+>   "status": 400,
+>   "message": "입력값이 올바르지 않습니다.",
+>   "errors": { "title": "제목은 필수입니다." }
+> }
+> ```
 
 ---
 
