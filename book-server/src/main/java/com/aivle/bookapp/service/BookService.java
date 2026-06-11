@@ -33,9 +33,12 @@ public class BookService {
     private final RestTemplate restTemplate;
 
     @Transactional(readOnly = true)
-    public Page<BookResponse> findAll(Pageable pageable) {
-        return bookRepository.findAll(pageable)
-                .map(BookResponse::from);
+    public Page<BookResponse> findAll(String search, Pageable pageable) {
+        if (search == null || search.isBlank()) {
+            return bookRepository.findAll(pageable).map(BookResponse::from);
+        }
+        return bookRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(
+                search, search, pageable).map(BookResponse::from);
     }
 
     @Transactional(readOnly = true)

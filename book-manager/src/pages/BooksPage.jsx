@@ -9,7 +9,8 @@ export default function BooksPage() {
   const [books, setBooks] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -18,16 +19,18 @@ export default function BooksPage() {
 
   useEffect(() => {
     const load = async () => {
+      setIsLoading(true)
+      setError('')
       try {
+        const searchParam = appliedSearch ? `&search=${encodeURIComponent(appliedSearch)}` : ''
         const res = await fetch(
-          `${BOOKS_URL}?page=${page}&size=${pageSize}&sort=createdAt,desc`
+          `${BOOKS_URL}?page=${page}&size=${pageSize}&sort=createdAt,desc${searchParam}`
         )
         if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
         const data = await res.json()
         setBooks(data.content)
         setTotalPages(data.totalPages)
         setTotalElements(data.totalElements)
-
       } catch (err) {
         setError(err.message)
       } finally {
@@ -35,14 +38,26 @@ export default function BooksPage() {
       }
     }
     load()
-  }, [page])
+  }, [page, appliedSearch])
 
-  // 클라이언트 사이드 검색 필터
-  const filtered = books.filter(
-    b =>
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      (b.author || '').toLowerCase().includes(search.toLowerCase())
-  )
+  const handleSearch = () => {
+    setPage(0)
+    setSelectedIds([])
+    setAppliedSearch(searchInput.trim())
+  }
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch()
+  }
+
+  const handleSearchReset = () => {
+    setSearchInput('')
+    setPage(0)
+    setSelectedIds([])
+    setAppliedSearch('')
+  }
+
+  const filtered = books
 
   // 개별 도서 선택 / 선택 해제
   const handleSelectBook = (bookId) => {
@@ -122,16 +137,25 @@ export default function BooksPage() {
       </div>
 
       {/* 검색 */}
-      {!isLoading && !error && books.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
+      {!isLoading && !error && (books.length > 0 || appliedSearch) && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
           <input
             type="text"
             className="form-input"
-            placeholder="🔍 제목 또는 저자로 검색"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            placeholder="제목 또는 저자로 검색"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             style={{ maxWidth: 360 }}
           />
+          <button type="button" className="btn btn-primary" onClick={handleSearch}>
+            검색
+          </button>
+          {appliedSearch && (
+            <button type="button" className="btn btn-ghost" onClick={handleSearchReset}>
+              초기화
+            </button>
+          )}
         </div>
       )}
 
@@ -202,11 +226,11 @@ export default function BooksPage() {
       )}
 
       {/* 검색 결과 없음 */}
-      {!isLoading && !error && books.length > 0 && filtered.length === 0 && (
+      {!isLoading && !error && appliedSearch && books.length === 0 && (
         <div className="empty-wrap">
           <span className="empty-icon">🔍</span>
-          <p className="empty-text">"{search}"에 대한 검색 결과가 없습니다</p>
-          <button className="btn btn-ghost" onClick={() => setSearch('')}>
+          <p className="empty-text">"{appliedSearch}"에 대한 검색 결과가 없습니다</p>
+          <button className="btn btn-ghost" onClick={handleSearchReset}>
             검색어 초기화
           </button>
         </div>

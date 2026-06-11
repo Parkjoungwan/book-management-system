@@ -23,8 +23,10 @@ public class BookController {
 
     // GET /books - 목록 조회
     @GetMapping
-    public ResponseEntity<Page<BookResponse>> findAll(Pageable pageable) {
-        return ResponseEntity.ok(bookService.findAll(pageable));
+    public ResponseEntity<Page<BookResponse>> findAll(
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        return ResponseEntity.ok(bookService.findAll(search, pageable));
     }
 
     // GET /books/{id} - 상세 조회
