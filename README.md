@@ -81,60 +81,13 @@ npm run dev
 
 ![API 명세서](docs/api_spec.svg)
 
-### Book API
-
-| # | Method | Endpoint | Request Body / Params | Response | 설명 |
-|---|--------|----------|-----------------------|----------|------|
-| 1 | GET | /books | ?page=&size=&sort=&search= (optional) | 200 + Page\<Book\> | 목록 조회 (페이지네이션·검색) |
-| 2 | GET | /books/{id} | — | 200 + Book | 상세 조회 |
-| 3 | POST | /books | title*, content* (author 선택) | 201 + Book | 도서 등록 |
-| 4 | PATCH | /books/{id} | title?, author?, content? | 200 + Book | 도서 부분 수정 |
-| 5 | DELETE | /books/{id} | — | 204 No Content | 도서 삭제 |
-| 6 | PATCH | /books/{id}/cover | coverImageUrl | 200 + Book | AI 표지 URL 저장 |
-| 7 | POST | /books/{id}/cover/generate | apiKey*, prompt?, quality?, size?, outputFormat? | 200 + Book | AI 표지 생성·저장 |
-
-### Cover History API
-
-| # | Method | Endpoint | Request Body | Response | 설명 |
-|---|--------|----------|--------------|----------|------|
-| 8 | GET | /books/{bookId}/covers | — | 200 + BookCover[] | 표지 이력 목록 조회 |
-| 9 | POST | /books/{bookId}/covers | imageUrl*, quality?, size?, outputFormat? | 201 + BookCover | 표지 이력 저장 |
-| 10 | PATCH | /books/{bookId}/covers/{coverId}/activate | — | 200 + BookCover | 대표 표지 지정 |
-| 11 | DELETE | /books/{bookId}/covers/{coverId} | — | 204 No Content | 표지 이력 삭제 |
-
-> \* 필수 필드  ? 선택 필드  
-> 오류 응답: `404` 도서/표지 없음 · `400` 검증 실패 · `400` 소유권 불일치
+> \* 필수 필드  ? 선택 필드 · 오류 응답: `404` 도서/표지 없음 · `400` 검증 실패 · `400` 소유권 불일치
 
 ---
 
 ## ERD
 
 ![ERD](docs/erd.svg)
-
-### BOOK
-
-| 필드 | 타입 | 제약 |
-|------|------|------|
-| id | BIGINT | PK, AUTO_INCREMENT |
-| title | VARCHAR(255) | NOT NULL |
-| author | VARCHAR(255) | nullable |
-| content | TEXT | NOT NULL |
-| cover_image_url | CLOB | nullable |
-| created_at | TIMESTAMP | auto (@CreationTimestamp) |
-| updated_at | TIMESTAMP | auto (@UpdateTimestamp) |
-
-### BOOK_COVER
-
-| 필드 | 타입 | 제약 |
-|------|------|------|
-| id | BIGINT | PK, AUTO_INCREMENT |
-| book_id | BIGINT | FK → BOOK.id, NOT NULL |
-| image_url | TEXT | NOT NULL |
-| quality | VARCHAR(255) | nullable |
-| size | VARCHAR(255) | nullable |
-| output_format | VARCHAR(255) | nullable |
-| is_active | BOOLEAN | NOT NULL, default false |
-| created_at | TIMESTAMP | auto (@CreationTimestamp) |
 
 > BOOK : BOOK_COVER = 1 : N (cascade=ALL, orphanRemoval=true)
 
