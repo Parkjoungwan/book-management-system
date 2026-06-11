@@ -1,6 +1,7 @@
 package com.aivle.bookapp.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,11 +20,13 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "제목은 필수입니다.")
     @Column(nullable = false)
     private String title;
 
     private String author;
 
+    @NotBlank(message = "내용은 필수입니다.")
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
