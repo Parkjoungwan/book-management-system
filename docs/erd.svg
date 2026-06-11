@@ -1,0 +1,151 @@
+<svg viewBox="0 0 980 540" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Book Entity ERD</title>
+  <desc>BOOK과 BOOK_COVER 테이블의 ERD 다이어그램</desc>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#00000018"/>
+    </filter>
+  </defs>
+
+  <rect width="980" height="540" fill="#f8f9fc"/>
+  <text x="490" y="40" font-family="Segoe UI,sans-serif" font-size="18" font-weight="700" fill="#1a1a2e" text-anchor="middle">Book Entity — ERD</text>
+
+  <!-- ============ BOOK table : x 50..420 (width 370) ============ -->
+  <rect x="50" y="66" width="370" height="376" rx="10" fill="white" filter="url(#shadow)"/>
+  <rect x="50" y="66" width="370" height="44" rx="10" fill="#3461D1"/>
+  <rect x="50" y="96" width="370" height="14" fill="#3461D1"/>
+  <text x="235" y="94" font-family="Segoe UI,sans-serif" font-size="15" font-weight="700" fill="white" text-anchor="middle">BOOK</text>
+
+  <!-- column x: badge 60 | field 100 | type 220 | constraint 320 (left) -->
+  <!-- id -->
+  <rect x="50" y="110" width="370" height="38" fill="#fffbea"/>
+  <rect x="60" y="119" width="30" height="18" rx="3" fill="#f5a623"/>
+  <text x="75" y="132" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">PK</text>
+  <text x="100" y="134" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">id</text>
+  <text x="220" y="134" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">BIGINT</text>
+  <text x="300" y="134" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">AUTO_INCREMENT</text>
+
+  <!-- title -->
+  <rect x="50" y="148" width="370" height="38" fill="white"/>
+  <text x="100" y="172" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">title</text>
+  <text x="220" y="172" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">VARCHAR(255)</text>
+  <text x="320" y="172" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#e74c3c">NOT NULL</text>
+
+  <!-- author -->
+  <rect x="50" y="186" width="370" height="38" fill="#f9f9f9"/>
+  <text x="100" y="210" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">author</text>
+  <text x="220" y="210" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">VARCHAR(255)</text>
+  <text x="320" y="210" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">nullable</text>
+
+  <!-- content -->
+  <rect x="50" y="224" width="370" height="38" fill="white"/>
+  <text x="100" y="248" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">content</text>
+  <text x="220" y="248" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">TEXT</text>
+  <text x="320" y="248" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#e74c3c">NOT NULL</text>
+
+  <!-- cover_image_url -->
+  <rect x="50" y="262" width="370" height="38" fill="#f9f9f9"/>
+  <text x="100" y="286" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">cover_image_url</text>
+  <text x="220" y="286" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">CLOB</text>
+  <text x="320" y="286" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">nullable</text>
+
+  <!-- created_at -->
+  <rect x="50" y="300" width="370" height="38" fill="white"/>
+  <text x="100" y="324" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">created_at</text>
+  <text x="220" y="324" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">TIMESTAMP</text>
+  <text x="320" y="324" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#27ae60">auto</text>
+
+  <!-- updated_at -->
+  <rect x="50" y="338" width="370" height="38" fill="#f9f9f9"/>
+  <text x="100" y="362" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">updated_at</text>
+  <text x="220" y="362" font-family="Segoe UI,sans-serif" font-size="11" fill="#3461D1">TIMESTAMP</text>
+  <text x="320" y="362" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#27ae60">auto</text>
+
+  <!-- footer note -->
+  <rect x="50" y="376" width="370" height="66" rx="0" fill="#f0f4ff"/>
+  <rect x="50" y="422" width="370" height="20" rx="10" fill="#f0f4ff"/>
+  <text x="235" y="400" font-family="Segoe UI,sans-serif" font-size="10" fill="#3461D1" text-anchor="middle">OneToMany → BOOK_COVER</text>
+  <text x="235" y="416" font-family="Segoe UI,sans-serif" font-size="10" fill="#888" text-anchor="middle">cascade=ALL, orphanRemoval=true</text>
+
+  <!-- ============ BOOK_COVER table : x 560..950 (width 390) ============ -->
+  <rect x="560" y="66" width="390" height="436" rx="10" fill="white" filter="url(#shadow)"/>
+  <rect x="560" y="66" width="390" height="44" rx="10" fill="#27ae60"/>
+  <rect x="560" y="96" width="390" height="14" fill="#27ae60"/>
+  <text x="755" y="94" font-family="Segoe UI,sans-serif" font-size="15" font-weight="700" fill="white" text-anchor="middle">BOOK_COVER</text>
+
+  <!-- column x: badge 570 | field 610 | type 740 | constraint 840 (left) -->
+  <!-- id -->
+  <rect x="560" y="110" width="390" height="38" fill="#fffbea"/>
+  <rect x="570" y="119" width="30" height="18" rx="3" fill="#f5a623"/>
+  <text x="585" y="132" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">PK</text>
+  <text x="610" y="134" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">id</text>
+  <text x="740" y="134" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">BIGINT</text>
+  <text x="830" y="134" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">AUTO_INCREMENT</text>
+
+  <!-- book_id -->
+  <rect x="560" y="148" width="390" height="38" fill="#fff5f5"/>
+  <rect x="570" y="157" width="30" height="18" rx="3" fill="#e74c3c"/>
+  <text x="585" y="170" font-family="Segoe UI,sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle">FK</text>
+  <text x="610" y="172" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">book_id</text>
+  <text x="740" y="172" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">BIGINT</text>
+  <text x="830" y="172" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#e74c3c">NOT NULL</text>
+
+  <!-- image_url -->
+  <rect x="560" y="186" width="390" height="38" fill="white"/>
+  <text x="610" y="210" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">image_url</text>
+  <text x="740" y="210" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">TEXT</text>
+  <text x="830" y="210" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#e74c3c">NOT NULL</text>
+
+  <!-- quality -->
+  <rect x="560" y="224" width="390" height="38" fill="#f9f9f9"/>
+  <text x="610" y="248" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">quality</text>
+  <text x="740" y="248" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">VARCHAR(255)</text>
+  <text x="830" y="248" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">nullable</text>
+
+  <!-- size -->
+  <rect x="560" y="262" width="390" height="38" fill="white"/>
+  <text x="610" y="286" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">size</text>
+  <text x="740" y="286" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">VARCHAR(255)</text>
+  <text x="830" y="286" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">nullable</text>
+
+  <!-- output_format -->
+  <rect x="560" y="300" width="390" height="38" fill="#f9f9f9"/>
+  <text x="610" y="324" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">output_format</text>
+  <text x="740" y="324" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">VARCHAR(255)</text>
+  <text x="830" y="324" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#888">nullable</text>
+
+  <!-- is_active -->
+  <rect x="560" y="338" width="390" height="38" fill="white"/>
+  <text x="610" y="362" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">is_active</text>
+  <text x="740" y="362" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">BOOLEAN</text>
+  <text x="830" y="362" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#e74c3c">NOT NULL · default false</text>
+
+  <!-- created_at -->
+  <rect x="560" y="376" width="390" height="38" fill="#f9f9f9"/>
+  <text x="610" y="400" font-family="Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#1a1a2e">created_at</text>
+  <text x="740" y="400" font-family="Segoe UI,sans-serif" font-size="11" fill="#27ae60">TIMESTAMP</text>
+  <text x="830" y="400" font-family="Segoe UI,sans-serif" font-size="9.5" fill="#27ae60">auto</text>
+
+  <!-- footer note -->
+  <rect x="560" y="414" width="390" height="88" rx="0" fill="#f0fff6"/>
+  <rect x="560" y="472" width="390" height="30" rx="10" fill="#f0fff6"/>
+  <text x="755" y="438" font-family="Segoe UI,sans-serif" font-size="10" fill="#27ae60" text-anchor="middle">ManyToOne(LAZY) → BOOK</text>
+  <text x="755" y="454" font-family="Segoe UI,sans-serif" font-size="10" fill="#888" text-anchor="middle">@JoinColumn(book_id, NOT NULL)</text>
+
+  <!-- ============ Relationship line ============ -->
+  <line x1="420" y1="281" x2="490" y2="281" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="490" y1="281" x2="490" y2="167" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <line x1="490" y1="167" x2="560" y2="167" stroke="#aaa" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+  <!-- one side -->
+  <line x1="420" y1="277" x2="427" y2="281" stroke="#3461D1" stroke-width="2"/>
+  <line x1="420" y1="285" x2="427" y2="281" stroke="#3461D1" stroke-width="2"/>
+  <!-- many side crow's foot -->
+  <line x1="560" y1="167" x2="553" y2="161" stroke="#27ae60" stroke-width="2"/>
+  <line x1="560" y1="167" x2="553" y2="167" stroke="#27ae60" stroke-width="2"/>
+  <line x1="560" y1="167" x2="553" y2="173" stroke="#27ae60" stroke-width="2"/>
+  <line x1="550" y1="160" x2="550" y2="174" stroke="#27ae60" stroke-width="2"/>
+
+  <rect x="455" y="215" width="70" height="22" rx="4" fill="white" stroke="#ddd"/>
+  <text x="490" y="230" font-family="Segoe UI,sans-serif" font-size="11" font-weight="700" fill="#555" text-anchor="middle">1 : N</text>
+</svg>
