@@ -211,7 +211,7 @@ export default function BookForm({ initialData = {}, onSubmit, submitLabel = '�
             type="button"
             className="btn btn-ghost"
             onClick={handleCancel}
-            disabled={isSubmitting || isChanged}
+            disabled={isSubmitting}
           >
             취소
           </button>
