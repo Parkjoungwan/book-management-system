@@ -20,3 +20,7 @@ spring:
       ddl-auto: update
       # create → update : 재시작할 때 테이블을 새로 만들지 않고 기존 것 유지
     show-sql: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      # 26.06.11 추가 수정
