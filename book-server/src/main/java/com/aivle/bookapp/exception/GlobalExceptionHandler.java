@@ -37,4 +37,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(400, "입력값이 올바르지 않습니다.", errors));
     }
+
+    @ExceptionHandler(BookCoverNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBookCoverNotFound(BookCoverNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(404, ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(400, ex.getMessage()));
+    }
 }

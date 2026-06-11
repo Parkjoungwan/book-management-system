@@ -1,5 +1,6 @@
 package com.aivle.bookapp.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -7,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -40,4 +43,11 @@ public class Book {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    // ── BookCover 기능 추가로 인한 관계 추가 ──
+    // @JsonIgnore: 순환참조 방지 + 표지 목록은 /books/{id}/covers API로 별도 조회
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonIgnore
+    private List<BookCover> covers = new ArrayList<>();
 }
