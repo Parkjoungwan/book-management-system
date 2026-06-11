@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { BOOKS_URL, OPENAI_IMAGE_URL } from '../../constants/api'
+import { BOOKS_URL } from '../../constants/api'
 
 export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIsGenerating }) {
-  const [apiKey, setApiKey] = useState(
-    import.meta.env.VITE_OPENAI_API_KEY || ''
-  )
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_OPENAI_API_KEY || '')
   const [quality, setQuality] = useState('low')
   const [size, setSize] = useState('1024x1536')
   const [outputFormat, setOutputFormat] = useState('png')
@@ -14,26 +12,6 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
   const [previewUrl, setPreviewUrl] = useState(null)
   const [error, setError] = useState('')
 
-  // 프롬프트 구성
-  const buildPrompt = () => {
-    const base = `A beautiful book cover for a book titled "${book.title}"`
-    const author = book.author ? ` by ${book.author}` : ''
-    const content = book.content
-      ? `. The book is about: ${book.content.slice(0, 200)}`
-      : ''
-    const request = userPrompt.trim()
-      ? ` Please reflect the user request: ${userPrompt.trim()}`
-      : ''
-    return (
-      base +
-      author +
-      content +
-      request +
-      '. Professional book cover design, high quality illustration, visually appealing.'
-    )
-  }
-
-  // AI 표지 생성
   const handleGenerate = async () => {
     setError('')
 
@@ -46,39 +24,19 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
     setPreviewUrl(null)
 
     try {
-      const prompt = buildPrompt()
-
-      const res = await fetch(OPENAI_IMAGE_URL, {
+      const res = await fetch(`${BOOKS_URL}/${book.id}/cover/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey.trim()}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-image-2',
-          prompt,
-          n: 1,
-          size,
-          quality,
-          output_format: outputFormat,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey, userPrompt, size, quality, outputFormat }),
       })
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        const msg = errData?.error?.message || ''
-        if (res.status === 401) throw new Error(`API Key가 유효하지 않습니다. (401) ${msg}`)
-        if (res.status === 429) throw new Error(`요청 한도를 초과했습니다. 잠시 후 재시도해주세요. (429)`)
-        if (res.status === 400) throw new Error(`잘못된 요청입니다. (400) ${msg}`)
-        throw new Error(`OpenAI 오류가 발생했습니다. (${res.status}) ${msg}`)
+        throw new Error(errData?.message || `이미지 생성에 실패했습니다. (${res.status})`)
       }
 
       const data = await res.json()
-      const b64Json = data?.data?.[0]?.b64_json
-      if (!b64Json) throw new Error('이미지 데이터를 받지 못했습니다. 응답을 확인해주세요.')
-
-      const imageSrc = `data:image/${outputFormat};base64,${b64Json}`
-      setPreviewUrl(imageSrc)
+      setPreviewUrl(data.coverImageUrl)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -86,7 +44,6 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
     }
   }
 
-  // 생성된 표지를 이력에 저장 (POST /covers -> isActive:false)
   const handleSave = async () => {
     if (!previewUrl) return
     setIsSaving(true)
@@ -108,8 +65,8 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
         throw new Error(errData.message || '표지 저장에 실패했습니다.')
       }
 
-      const saved = await res.json() // BookCoverResponse (isActive: false)
-      onCoverSaved(saved)         
+      const saved = await res.json()
+      onCoverSaved(saved)
       setPreviewUrl(null)
     } catch (err) {
       setError(err.message)
@@ -216,10 +173,18 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
                 <button className="btn btn-success" onClick={handleSave} disabled={isSaving}>
                   {isSaving ? '저장 중...' : '💾 이력에 저장'}
                 </button>
-                <button className="btn btn-outline" onClick={handleGenerate} disabled={isGenerating || isSaving}>
+                <button
+                  className="btn btn-outline"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || isSaving}
+                >
                   🔄 다시 생성
                 </button>
-                <button className="btn btn-ghost" onClick={() => setPreviewUrl(null)} disabled={isSaving}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setPreviewUrl(null)}
+                  disabled={isSaving}
+                >
                   취소
                 </button>
               </div>

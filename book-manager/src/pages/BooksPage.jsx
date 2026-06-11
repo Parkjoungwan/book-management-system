@@ -11,14 +11,23 @@ export default function BooksPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState([])
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const pageSize = 8
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(BOOKS_URL)
+        const res = await fetch(
+          `${BOOKS_URL}?page=${page}&size=${pageSize}&sort=createdAt,desc`
+        )
         if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
         const data = await res.json()
-        setBooks(data)
+        setBooks(data.content)
+        setTotalPages(data.totalPages)
+        setTotalElements(data.totalElements)
+
       } catch (err) {
         setError(err.message)
       } finally {
@@ -26,7 +35,7 @@ export default function BooksPage() {
       }
     }
     load()
-  }, [])
+  }, [page])
 
   // 클라이언트 사이드 검색 필터
   const filtered = books.filter(
@@ -57,36 +66,55 @@ export default function BooksPage() {
   }
 
   // 선택한 도서 다중 삭제
-  const handleDeleteSelected = async () => {
-    if (selectedIds.length === 0) {
-      window.alert('삭제할 도서를 선택해주세요.')
-      return
-    }
-
-    const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
-    if (!ok) return
-
-    try {
-      for (const id of selectedIds) {
-        const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
-        if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
+    const handleDeleteSelected = async () => {
+      if (selectedIds.length === 0) {
+        window.alert('삭제할 도서를 선택해주세요.')
+        return
       }
 
-      setBooks(prev => prev.filter(book => !selectedIds.includes(book.id)))
-      setSelectedIds([])
+      const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
+      if (!ok) return
 
-      window.alert('선택한 도서가 삭제되었습니다.')
-    } catch (err) {
-      setError(err.message)
+      try {
+        for (const id of selectedIds) {
+          const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
+          if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
+        }
+
+        const nextTotalElements = totalElements - selectedIds.length
+        const nextTotalPages = Math.ceil(nextTotalElements / pageSize)
+        const nextPage = Math.min(page, Math.max(nextTotalPages - 1, 0))
+
+        setSelectedIds([])
+        setTotalElements(nextTotalElements)
+        setTotalPages(nextTotalPages)
+
+        if (nextPage !== page) {
+          setPage(nextPage)
+        } else {
+          const res = await fetch(
+            `${BOOKS_URL}?page=${nextPage}&size=${pageSize}&sort=createdAt,desc`
+          )
+          if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
+          const data = await res.json()
+
+          setBooks(data.content)
+          setTotalPages(data.totalPages)
+          setTotalElements(data.totalElements)
+        }
+
+        window.alert('선택한 도서가 삭제되었습니다.')
+      } catch (err) {
+        setError(err.message)
+      }
     }
-  }
 
   return (
     <main className="page">
       {/* 페이지 헤더 */}
       <div className="page-header">
         <p className="page-subtitle">
-          {!isLoading && !error && `총 ${books.length}권의 도서가 있습니다`}
+          {!isLoading && !error && `총 ${totalElements}권의 도서가 있습니다`}
         </p>
         <Link to="/books/new" className="btn btn-primary">
           + 새 도서 등록
@@ -158,7 +186,7 @@ export default function BooksPage() {
 
       {/* 에러 */}
       {!isLoading && error && (
-        <ErrorMessage message={`도서 목록을 불러오지 못했습니다.(${error})`} />
+        <ErrorMessage message="도서 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요." />
       )}
 
       {/* 빈 목록 */}
@@ -217,6 +245,40 @@ export default function BooksPage() {
               <BookCard book={book} />
             </div>
           ))}
+        </div>
+      )}
+
+      {!isLoading && !error && totalPages > 1 && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 12,
+            marginTop: 32,
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => setPage(prev => Math.max(prev - 1, 0))}
+            disabled={page === 0}
+          >
+            이전
+          </button>
+
+          <span style={{ color: '#6b7280', fontSize: 14 }}>
+            {page + 1} / {totalPages}
+          </span>
+
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
+            disabled={page >= totalPages - 1}
+          >
+            다음
+          </button>
         </div>
       )}
     </main>

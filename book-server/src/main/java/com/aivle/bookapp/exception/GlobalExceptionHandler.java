@@ -20,6 +20,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(404, ex.getMessage()));
     }
 
+    @ExceptionHandler(OpenAiException.class)
+    public ResponseEntity<ErrorResponse> handleOpenAi(OpenAiException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(ErrorResponse.of(502, ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

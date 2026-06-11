@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "도서관리시스템 API (DTO 리팩토링)",
+    "description": "refactor/book-dto 브랜치 기준 — DTO 도입 후 동작 검증.\n핵심: Mass Assignment 차단(id/createdAt/updatedAt 주입 무시), content 필수, author 선택.\n각 요청에 Postman 테스트 스크립트(자동 검증) 포함.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 도서 등록 — 정상 (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test('서버가 id 자동 부여', () => pm.expect(b.id).to.be.a('number'));",
+              "pm.test('createdAt 자동 설정', () => pm.expect(b.createdAt).to.be.a('string'));",
+              "pm.test('updatedAt 자동 설정', () => pm.expect(b.updatedAt).to.be.a('string'));",
+              "pm.test('응답에 요청 값 반영', () => pm.expect(b.title).to.eql('별빛 아래의 서점'));",
+              "// 이후 요청에서 사용할 id 저장",
+              "pm.collectionVariables.set('bookId', b.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"별빛 아래의 서점\",\n  \"author\": \"홍길동\",\n  \"content\": \"작은 마을 서점의 1년을 담은 에세이\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "BookCreateRequest로 매핑. title·content 필수, author 선택.\n응답은 BookResponse(서버가 id/timestamp 채움)."
+      }
+    },
+    {
+      "name": "2. ⭐ Mass Assignment 차단 검증 (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test('주입한 id(9999) 무시됨', () => pm.expect(b.id).to.not.eql(9999));",
+              "pm.test('주입한 createdAt(2000년) 무시됨', () => pm.expect(b.createdAt).to.not.include('2000-01-01'));",
+              "pm.test('updatedAt도 서버 시각으로 설정', () => pm.expect(b.updatedAt).to.not.include('2000-01-01'));",
+              "pm.test('coverImageUrl 주입 무시(null)', () => pm.expect(b.coverImageUrl == null || b.coverImageUrl === '').to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": 9999,\n  \"title\": \"주입 시도 도서\",\n  \"author\": \"공격자\",\n  \"content\": \"id와 타임스탬프를 강제로 넣어봄\",\n  \"coverImageUrl\": \"data:해킹\",\n  \"createdAt\": \"2000-01-01T00:00:00\",\n  \"updatedAt\": \"2000-01-01T00:00:00\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "DTO 리팩토링 핵심 검증.\nBookCreateRequest에는 id/createdAt/updatedAt/coverImageUrl 필드가 없으므로\n클라이언트가 보내도 Spring이 무시(unknown 필드 drop) → 서버가 값을 단독 관리."
+      }
+    },
+    {
+      "name": "3. 도서 등록 — author 없음 (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('author 선택 → 201 정상 등록', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test('author는 null/빈값 허용', () => pm.expect(b.author == null || b.author === '').to.be.true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"저자 미상 도서\",\n  \"content\": \"저자 없이 등록되는지 확인하는 도서\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "author는 @NotBlank 제거됨 → 없어도 201."
+      }
+    },
+    {
+      "name": "4. 도서 등록 — content 없음 (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('content 필수 → 400', () => pm.response.to.have.status(400));",
+              "const b = pm.response.json();",
+              "pm.test('errors.content 메시지 포함', () => pm.expect(b.errors).to.have.property('content'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"내용 없는 도서\",\n  \"author\": \"홍길동\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "BookCreateRequest의 @NotBlank(content) 검증 → 400 + errors.content."
+      }
+    },
+    {
+      "name": "5. 도서 등록 — title 공백만 (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('title 공백 → 400', () => pm.response.to.have.status(400));",
+              "pm.test('errors.title 포함', () => pm.expect(pm.response.json().errors).to.have.property('title'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"   \",\n  \"content\": \"제목이 공백만 있는 경우\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "@NotBlank는 공백만 있는 문자열도 거부."
+      }
+    },
+    {
+      "name": "6. 도서 목록 조회 (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('BookResponse 배열', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/books",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books"]
+        },
+        "description": "List<BookResponse> 반환."
+      }
+    },
+    {
+      "name": "7. 도서 상세 조회 (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('id 일치', () => pm.expect(String(b.id)).to.eql(pm.collectionVariables.get('bookId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/books/{{bookId}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books", "{{bookId}}"]
+        },
+        "description": "1번에서 저장한 bookId로 단건 조회 (BookResponse)."
+      }
+    },
+    {
+      "name": "8. 도서 수정 — 제목만 변경 (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test('title 변경 반영', () => pm.expect(b.title).to.eql('수정된 제목'));",
+              "pm.test('author 기존값 유지(미전송)', () => pm.expect(b.author).to.eql('홍길동'));",
+              "pm.test('content 기존값 유지(미전송)', () => pm.expect(b.content).to.eql('작은 마을 서점의 1년을 담은 에세이'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"수정된 제목\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books/{{bookId}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books", "{{bookId}}"]
+        },
+        "description": "BookUpdateRequest로 부분 수정.\nnull(미전송) 필드는 기존 값 유지 → title만 변경됨."
+      }
+    },
+    {
+      "name": "9. AI 표지 저장 (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('coverImageUrl 저장됨', () => pm.expect(pm.response.json().coverImageUrl).to.include('base64'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"coverImageUrl\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/books/{{bookId}}/cover",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books", "{{bookId}}", "cover"]
+        },
+        "description": "CoverUpdateRequest로 매핑 (기존 Map<String,String> 대체)."
+      }
+    },
+    {
+      "name": "10. 상세 조회 — 없는 ID (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404 Not Found', () => pm.response.to.have.status(404));",
+              "pm.test('message 포함', () => pm.expect(pm.response.json()).to.have.property('message'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/books/999999",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books", "999999"]
+        },
+        "description": "BookNotFoundException → GlobalExceptionHandler → 404."
+      }
+    },
+    {
+      "name": "11. 도서 삭제 (204)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/books/{{bookId}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["books", "{{bookId}}"]
+        },
+        "description": "1번에서 등록한 도서 삭제 → 204."
+      }
+    }
+  ]
+}

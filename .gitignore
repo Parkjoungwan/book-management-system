@@ -22,6 +22,9 @@ book-server/*.ipr
 *.mv.db
 *.trace.db
 
+# 실수로 들어간 self-gitlink (저장소 자기 자신 참조) 재발 방지
+/4th_miniproject/
+
 # ── 공통 ──────────────────────────────────
 *.log
 npm-debug.log*
@@ -31,3 +34,6 @@ npm-debug.log*
 !.vscode/extensions.json
 .idea/
 .DS_Store
+
+# PR 초안 (로컬 전용)
+PR_*.md

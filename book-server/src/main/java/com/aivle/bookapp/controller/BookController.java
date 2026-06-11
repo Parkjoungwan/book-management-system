@@ -1,15 +1,18 @@
 package com.aivle.bookapp.controller;
 
-import com.aivle.bookapp.domain.Book;
+import com.aivle.bookapp.dto.BookCreateRequest;
+import com.aivle.bookapp.dto.BookResponse;
+import com.aivle.bookapp.dto.BookUpdateRequest;
+import com.aivle.bookapp.dto.CoverGenerateRequest;
+import com.aivle.bookapp.dto.CoverUpdateRequest;
 import com.aivle.bookapp.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/books")
@@ -20,37 +23,48 @@ public class BookController {
 
     // GET /books - 목록 조회
     @GetMapping
-    public ResponseEntity<List<Book>> findAll() {
-        return ResponseEntity.ok(bookService.findAll());
+    public ResponseEntity<Page<BookResponse>> findAll(Pageable pageable) {
+        return ResponseEntity.ok(bookService.findAll(pageable));
     }
 
     // GET /books/{id} - 상세 조회
     @GetMapping("/{id}")
-    public ResponseEntity<Book> findById(@PathVariable Long id) {
+    public ResponseEntity<BookResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.findById(id));
     }
 
     // POST /books - 등록 (201 Created)
     @PostMapping
-    public ResponseEntity<Book> create(@Valid @RequestBody Book book) {
-        Book saved = bookService.save(book);
+    public ResponseEntity<BookResponse> create(@Valid @RequestBody BookCreateRequest request) {
+        BookResponse saved = bookService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     // PATCH /books/{id} - 부분 수정 (title, author, content)
     @PatchMapping("/{id}")
-    public ResponseEntity<Book> update(@PathVariable Long id, @RequestBody Book request) {
+    public ResponseEntity<BookResponse> update(
+            @PathVariable Long id,
+            @RequestBody BookUpdateRequest request
+    ) {
         return ResponseEntity.ok(bookService.update(id, request));
     }
 
     // PATCH /books/{id}/cover - AI 표지 URL 저장
     @PatchMapping("/{id}/cover")
-    public ResponseEntity<Book> updateCover(
+    public ResponseEntity<BookResponse> updateCover(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body
+            @RequestBody CoverUpdateRequest request
     ) {
-        String coverImageUrl = body.get("coverImageUrl");
-        return ResponseEntity.ok(bookService.updateCover(id, coverImageUrl));
+        return ResponseEntity.ok(bookService.updateCover(id, request.coverImageUrl()));
+    }
+
+    // POST /books/{id}/cover/generate - AI 표지 생성 및 DB 저장
+    @PostMapping("/{id}/cover/generate")
+    public ResponseEntity<BookResponse> generateCover(
+            @PathVariable Long id,
+            @Valid @RequestBody CoverGenerateRequest request
+    ) {
+        return ResponseEntity.ok(bookService.generateAndSaveCover(id, request));
     }
 
     // DELETE /books/{id} - 삭제 (204 No Content)

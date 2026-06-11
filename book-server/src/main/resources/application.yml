@@ -2,25 +2,25 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: bookapp
   datasource:
-    url: jdbc:h2:mem:bookdb
     driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data/bookdb
+    # mem → file : 앱 껐다 켜도 데이터가 data/bookdb.mv.db 파일에 저장
     username: sa
-    password:
-
+    password: ${DB_PASSWORD:1234}
+    # password 환경변수화 : 환경변수 DB_PASSWORD가 없으면 기본값 1234 사용
   h2:
     console:
       enabled: true
       path: /h2-console
-
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+      # create → update : 재시작할 때 테이블을 새로 만들지 않고 기존 것 유지
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
   jackson:
     serialization:
       write-dates-as-timestamps: false
+      # 26.06.11 추가 수정
