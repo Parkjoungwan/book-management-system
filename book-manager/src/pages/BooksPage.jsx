@@ -214,7 +214,7 @@ export default function BooksPage() {
       )}
 
       {/* 빈 목록 */}
-      {!isLoading && !error && books.length === 0 && (
+      {!isLoading && !error && books.length === 0 && !appliedSearch && (
         <div className="empty-wrap">
           <span className="empty-icon">📭</span>
           <p className="empty-text">등록된 도서가 없습니다</p>
@@ -230,9 +230,6 @@ export default function BooksPage() {
         <div className="empty-wrap">
           <span className="empty-icon">🔍</span>
           <p className="empty-text">"{appliedSearch}"에 대한 검색 결과가 없습니다</p>
-          <button className="btn btn-ghost" onClick={handleSearchReset}>
-            검색어 초기화
-          </button>
         </div>
       )}
 
