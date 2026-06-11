@@ -114,7 +114,7 @@ npm run dev
 
 ## ERD
 
-![ERD](docs/erd.svg)
+![ERD](docs/erd.png)
 
 > BOOK : BOOK_COVER = 1 : N (cascade=ALL, orphanRemoval=true)
 
