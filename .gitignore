@@ -3,6 +3,7 @@ api_key.txt
 .env
 .env.local
 .env*.local
+book-server/config/application-secret.yml
 
 # 로컬 DB (각자 테스트 데이터 충돌 방지 — db.sample.json을 복사해서 사용)
 db.json
