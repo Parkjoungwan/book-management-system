@@ -8,7 +8,8 @@
 | 분류 | 기술 |
 |------|------|
 | Frontend | React 19, Vite, react-router-dom |
-| Backend | Spring Boot 3.2, Spring Data JPA, H2 Database |
+| Backend | Spring Boot 3.2, Spring Data JPA, Spring Security (JWT) |
+| DB | H2 (in-memory) |
 | AI | OpenAI API — GPT Image 2 |
 | 협업 | GitHub |
 
@@ -20,21 +21,21 @@
 4th_miniproject/
 ├── book-manager/          # Frontend (React + Vite)
 │   └── src/
-│       ├── components/    # BookCard, BookForm, CoverGenerator 등
+│       ├── components/    # BookCard, BookForm, CoverGenerator, ProtectedRoute
 │       ├── pages/         # BooksPage, BookDetailPage, BookCreatePage, BookEditPage
-│       └── constants/     # API URL 상수
+│       │                  # LoginPage, SignupPage
+│       └── utils/         # authFetch (JWT 자동 첨부 + 401 리다이렉트)
 ├── book-server/           # Backend (Spring Boot)
 │   └── src/main/java/com/aivle/bookapp/
-│       ├── domain/        # Book, BookCover Entity
-│       ├── repository/    # BookRepository, BookCoverRepository
-│       ├── service/       # BookService, BookCoverService (@Transactional)
-│       ├── controller/    # BookController, BookCoverController (REST API)
-│       ├── dto/           # BookCoverRequest, BookCoverResponse 등
-│       ├── exception/     # BookNotFoundException, BookCoverNotFoundException, GlobalExceptionHandler
-│       └── config/        # WebConfig (CORS)
+│       ├── domain/        # Book, BookCover, User 엔티티
+│       ├── repository/    # BookRepository, BookCoverRepository, UserRepository
+│       ├── service/       # BookService, BookCoverService, AuthService
+│       ├── controller/    # BookController, BookCoverController, AuthController
+│       ├── config/        # SecurityConfig, JwtTokenProvider, WebConfig
+│       └── exception/     # GlobalExceptionHandler
 └── docs/
-    ├── erd.svg            # Book / BookCover ERD
-    └── api_spec.svg       # API 명세서
+    ├── erd.png            # ERD (3개 테이블)
+    └── api_spec.png       # API 명세서 (13개 엔드포인트)
 ```
 
 ---
@@ -45,12 +46,19 @@
 
 ### Backend 실행
 
-```bash
-# IntelliJ에서 book-server/ 폴더 열기
-# BookappApplication.java → Run
+**1. JWT 시크릿 파일 생성 (최초 1회, 팀원 각자)**
+
+```
+book-server/config/application-secret.yml   ← gitignore 처리됨, 로컬에만 보관
 ```
 
-또는 Maven으로 직접 실행:
+```yaml
+jwt:
+  secret: <256-bit 이상 랜덤 문자열>
+  expiration-ms: 86400000
+```
+
+**2. 서버 기동**
 
 ```bash
 cd book-server
@@ -58,7 +66,7 @@ cd book-server
 ```
 
 → `http://localhost:8080` 기동 확인  
-→ H2 콘솔: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:file:./data/bookdb`, 비밀번호 없음)
+→ H2 콘솔: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:bookdb`, 비밀번호 없음)
 
 ### Frontend 실행
 
@@ -73,67 +81,43 @@ npm install
 npm run dev
 ```
 
-→ `http://localhost:5173` 접속
+→ `http://localhost:5173` 접속 → 로그인 후 사용
 
 ---
 
 ## API 명세서
 
-![API 명세서](docs/api_spec.svg)
+![API 명세서](docs/api_spec.png)
 
-**필드 표기:** `*` 필수 필드 · `?` 선택 필드 (생략 가능)
-
-### 오류 응답
-
-요청이 실패하면 아래 형태의 JSON을 상태 코드와 함께 반환합니다.
-
-```json
-{
-  "status": 404,
-  "message": "도서를 찾을 수 없습니다. id: 99",
-  "errors": null
-}
-```
-
-| 상태 | 발생 상황 | 예외 | 비고 |
-|------|-----------|------|------|
-| `404` | 존재하지 않는 도서/표지 id로 조회·수정·삭제 | `BookNotFoundException`, `BookCoverNotFoundException` | — |
-| `400` | 필수 필드 누락 등 입력값 검증 실패 | `MethodArgumentNotValidException` | 실패한 필드별 메시지를 `errors` 맵에 담아 반환 |
-| `400` | 다른 도서에 속한 표지를 활성화·삭제 시도 (소유권 불일치) | `IllegalArgumentException` | `coverId`가 경로의 `bookId`에 속하지 않을 때 |
-
-> **검증 실패(`400`)** 예시 — `errors`에 필드별 사유 포함:
-> ```json
-> {
->   "status": 400,
->   "message": "입력값이 올바르지 않습니다.",
->   "errors": { "title": "제목은 필수입니다." }
-> }
-> ```
+> 오류 응답 공통 형식: `{ status, message, errors }`  
+> - `404` 도서·표지 없음  
+> - `400` 검증 실패 (errors 맵에 필드별 사유 포함)  
+> - `400` 소유권 불일치 (다른 사용자의 도서·표지 수정·삭제 시도)  
+> - `401 / 403` 인증 실패 (토큰 없음 또는 만료)
 
 ---
 
 ## ERD
 
-![ERD](docs/erd.svg)
+![ERD](docs/erd.png)
 
-> BOOK : BOOK_COVER = 1 : N (cascade=ALL, orphanRemoval=true)
+> `book.user_id` → `users.id` : 작성자 연결 (nullable — 미로그인 등록 데이터 허용)  
+> `book_cover.book_id` → `book.id` : Book 삭제 시 BookCover cascade 삭제  
+> `is_active` : 대표 표지 여부, 한 책에 하나만 `true`
 
 ---
 
 ## AI 표지 생성 흐름
 
 ```
-React → POST /books/{id}/cover/generate (Backend 프록시)
-      → Backend → OpenAI API 호출
-      → b64_json 응답 → Data URL 변환
-      → Book.coverImageUrl 저장 + BookCover 이력 저장
+React → POST /books/{id}/cover/generate (JWT 포함)
+      → 백엔드가 OpenAI API 호출 (title·author·content로 프롬프트 구성)
+      → b64_json 응답 → CLOB으로 DB 저장 + BookCover 이력 추가
 ```
 
 1. 도서 상세 페이지 → **AI 표지 생성** 패널 열기
 2. OpenAI API Key 입력
-3. 품질 / 크기 옵션 선택 → **✨ AI 표지 생성** 클릭
-4. 미리보기 확인 후 **💾 이 표지로 저장** 클릭
-5. 표지 이력에서 이전 표지 조회 및 대표 표지 변경 가능
+3. 품질 / 크기 / 포맷 옵션 선택 → **✨ AI 표지 생성** 클릭
+4. 미리보기 확인 후 **💾 이력에 저장** 클릭
 
-> ⚠️ API Key는 소스코드에 하드코딩하거나 GitHub에 업로드하지 마세요.  
-> `.env.local`에 `VITE_OPENAI_API_KEY=sk-...` 형태로 설정 가능합니다.
+> ⚠️ API Key는 소스코드에 하드코딩하거나 GitHub에 업로드하지 마세요.
