@@ -103,14 +103,15 @@ def _draw_one_mandatory(ax, x, y, z=10):
 
 def _draw_zero_or_many(ax, x, y, z=10):
     """o< zero-or-many at N-end (left edge of table, line arrives from left).
-    Circle at distance, then crow's foot fanning to tip x."""
-    # Circle (o)
-    circle = plt.Circle((x - 0.36, y), 0.12,
+    Order line→table: circle, then crow's foot tip, then three lines spread toward table."""
+    # Circle (o) - on the line side
+    circle = plt.Circle((x - 0.44, y), 0.12,
                          color='#495057', fill=False, linewidth=1.8, zorder=z)
     ax.add_patch(circle)
-    # Crow's foot (3 lines fanning from x-0.16 to x)
-    for dy in (-0.17, 0.0, 0.17):
-        ax.plot([x - 0.18, x], [y + dy, y],
+    # Crow's foot: tip (single point) at x-0.20, spread outward to x (table edge)
+    tip_x = x - 0.20
+    for dy in (-0.18, 0.0, 0.18):
+        ax.plot([tip_x, x], [y, y + dy],
                 color='#495057', linewidth=1.5, zorder=z, solid_capstyle='round')
 
 
