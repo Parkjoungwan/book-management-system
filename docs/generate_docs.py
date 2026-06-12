@@ -94,24 +94,33 @@ def draw_entity_box(ax, table_name, fields, box_x, box_y, box_w, z=2):
     return box_h, row_y_list
 
 
-def _crow_foot(ax, tip_x, tip_y, direction='left', z=10):
-    """Draw N-end crow's foot. direction='left' means lines fan from left toward tip."""
-    sign = 1 if direction == 'right' else -1
-    offset = 0.22 * sign
-    for dy in (-0.16, 0.0, 0.16):
-        ax.plot([tip_x + offset, tip_x], [tip_y + dy, tip_y],
-                color='#868E96', linewidth=1.3, zorder=z, solid_capstyle='round')
+def _draw_one_mandatory(ax, x, y, z=10):
+    """|| double bar at 1-end (right edge of table, line exits right)."""
+    for dx in (0.10, 0.24):
+        ax.plot([x + dx, x + dx], [y - 0.20, y + 0.20],
+                color='#495057', linewidth=2.0, zorder=z, solid_capstyle='round')
 
 
-def _connect(ax, x1, y1, x2, y2, label1='1', label2='N', z=10):
+def _draw_zero_or_many(ax, x, y, z=10):
+    """o< zero-or-many at N-end (left edge of table, line arrives from left).
+    Circle at distance, then crow's foot fanning to tip x."""
+    # Circle (o)
+    circle = plt.Circle((x - 0.36, y), 0.12,
+                         color='#495057', fill=False, linewidth=1.8, zorder=z)
+    ax.add_patch(circle)
+    # Crow's foot (3 lines fanning from x-0.16 to x)
+    for dy in (-0.17, 0.0, 0.17):
+        ax.plot([x - 0.18, x], [y + dy, y],
+                color='#495057', linewidth=1.5, zorder=z, solid_capstyle='round')
+
+
+def _connect(ax, x1, y1, x2, y2, z=10):
+    """Connect 1-end (x1,y1) to 0..N-end (x2,y2) with crow's foot notation."""
     mid_x = (x1 + x2) / 2
     ax.plot([x1, mid_x, mid_x, x2], [y1, y1, y2, y2],
             color='#868E96', linewidth=1.5, zorder=z, solid_capstyle='round')
-    ax.text(x1 + 0.10, y1 + 0.14, label1,
-            fontsize=10, fontweight='bold', color='#495057', zorder=z + 1)
-    _crow_foot(ax, x2, y2, direction='left', z=z + 1)
-    ax.text(x2 - 0.36, y2 + 0.14, label2,
-            fontsize=10, fontweight='bold', color='#495057', zorder=z + 1)
+    _draw_one_mandatory(ax, x1, y1, z=z + 1)
+    _draw_zero_or_many(ax, x2, y2, z=z + 1)
 
 
 def draw_erd():
