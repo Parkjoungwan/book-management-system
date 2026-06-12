@@ -34,11 +34,8 @@ public class BookController {
 
     // GET /books/{id} - 상세 조회
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponse> findById(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(bookService.findById(id, user.getId()));
+    public ResponseEntity<BookResponse> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.findById(id));
     }
 
     // POST /books - 등록 (201 Created)

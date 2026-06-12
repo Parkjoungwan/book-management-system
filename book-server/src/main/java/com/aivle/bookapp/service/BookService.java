@@ -41,8 +41,12 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public BookResponse findById(Long id, Long userId) {
-        return BookResponse.from(getOwnedBookOrThrow(id, userId));
+    public BookResponse findById(Long id) {
+        return BookResponse.from(bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "도서를 찾을 수 없습니다."
+                )));
     }
 
     @Transactional

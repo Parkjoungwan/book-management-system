@@ -9,6 +9,7 @@ import { authFetch } from '../utils/authFetch'
 export default function BookEditPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const currentUserId = JSON.parse(localStorage.getItem('user') || 'null')?.userId
 
   const [book, setBook] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -33,6 +34,11 @@ export default function BookEditPage() {
       }
 
       const data = await res.json()
+      if (data.ownerId !== currentUserId) {
+        window.alert('본인이 등록한 도서만 수정할 수 있습니다.')
+        navigate(`/books/${id}`, { replace: true })
+        return
+      }
       setBook(data)
       } catch (err) {
         setError(err.message)
@@ -41,7 +47,7 @@ export default function BookEditPage() {
       }
     }
     load()
-  }, [id])
+  }, [id, navigate, currentUserId])
 
   // 수정 제출 — 변경된 필드만 PATCH
   const handleSubmit = async (formData) => {

@@ -28,11 +28,7 @@ function App() {
         />
         <Route
           path="/books/:id"
-          element={
-            <ProtectedRoute>
-              <BookDetailPage />
-            </ProtectedRoute>
-          }
+          element={<BookDetailPage />}
         />
         <Route
           path="/books/:id/edit"
