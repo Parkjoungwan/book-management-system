@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function formatDate(iso) {
   if (!iso) return ''
@@ -10,29 +10,8 @@ function formatDate(iso) {
 }
 
 export default function BookCard({ book }) {
-  const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
-  const isLoggedIn = Boolean(localStorage.getItem('token'))
-  const isOwner = user?.userId === book.ownerId
-
-  const handleClick = (event) => {
-    event.preventDefault()
-
-    if (!isLoggedIn) {
-      navigate('/login')
-      return
-    }
-
-    if (!isOwner) {
-      window.alert('본인이 등록한 도서만 상세 조회할 수 있습니다.')
-      return
-    }
-
-    navigate(`/books/${book.id}`)
-  }
-
   return (
-    <Link to={`/books/${book.id}`} className="book-card" onClick={handleClick}>
+    <Link to={`/books/${book.id}`} className="book-card">
       {book.coverImageUrl ? (
         <img
           src={book.coverImageUrl}
@@ -41,7 +20,7 @@ export default function BookCard({ book }) {
         />
       ) : (
         <div className="book-card-cover-placeholder">
-          <span className="placeholder-icon">📖</span>
+          <span className="placeholder-icon">📘</span>
           <p>표지 없음</p>
         </div>
       )}
