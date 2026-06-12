@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "BookCover 소유권 검증 테스트",
+    "description": "coverId가 bookId에 종속되지 않아 발생하는 취약점 재현 및 검증",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. 준비 — 도서 A 생성",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/books", "host": ["localhost"], "port": "8080", "path": ["books"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"도서 A\",\n  \"author\": \"저자 A\",\n  \"content\": \"도서 A 내용입니다.\"\n}"
+        }
+      },
+      "_comment": "응답에서 id 메모 (예: 1). 이후 요청에서 bookA_id로 사용"
+    },
+    {
+      "name": "2. 준비 — 도서 B 생성",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/books", "host": ["localhost"], "port": "8080", "path": ["books"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"도서 B\",\n  \"author\": \"저자 B\",\n  \"content\": \"도서 B 내용입니다.\"\n}"
+        }
+      },
+      "_comment": "응답에서 id 메모 (예: 2). 이후 요청에서 bookB_id로 사용"
+    },
+    {
+      "name": "3. 준비 — 도서 A에 표지 저장",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/books/1/covers", "host": ["localhost"], "port": "8080", "path": ["books", "1", "covers"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"imageUrl\": \"data:image/png;base64,iVBORw0KGgo=\",\n  \"quality\": \"low\",\n  \"size\": \"1024x1536\",\n  \"outputFormat\": \"png\"\n}"
+        }
+      },
+      "_comment": "응답에서 cover id 메모 (예: 1). 도서 A 소속 표지"
+    },
+    {
+      "name": "4. 정상 케이스 — 도서 A 표지 목록 조회",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/books/1/covers", "host": ["localhost"], "port": "8080", "path": ["books", "1", "covers"] }
+      },
+      "_comment": "기대: cover id=1 포함된 목록 반환"
+    },
+    {
+      "name": "5. [취약점] 도서 B로 도서 A 표지 activate 시도",
+      "request": {
+        "method": "PATCH",
+        "url": { "raw": "http://localhost:8080/books/2/covers/1/activate", "host": ["localhost"], "port": "8080", "path": ["books", "2", "covers", "1", "activate"] }
+      },
+      "_comment": "기대: 400 오류 (소유권 위반)\n실제(수정 전): setActiveCover에 검증 있어서 400 반환됨\n→ 이 케이스는 현재 방어됨"
+    },
+    {
+      "name": "6. [취약점] 도서 B로 도서 A 표지 삭제 시도",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "http://localhost:8080/books/2/covers/1", "host": ["localhost"], "port": "8080", "path": ["books", "2", "covers", "1"] }
+      },
+      "_comment": "기대: 400 오류 (소유권 위반)\n실제(수정 전): 204 반환되며 도서 A 표지가 삭제됨 ← 버그\n→ 이 케이스가 핵심 취약점"
+    },
+    {
+      "name": "7. 검증 — 도서 A 표지 목록 재조회",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:8080/books/1/covers", "host": ["localhost"], "port": "8080", "path": ["books", "1", "covers"] }
+      },
+      "_comment": "6번 수행 후:\n수정 전 → 빈 목록 (도서 A 표지가 삭제됨)\n수정 후 → cover id=1 그대로 존재"
+    },
+    {
+      "name": "8. [추가] 존재하지 않는 bookId로 삭제 시도",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "http://localhost:8080/books/999/covers/1", "host": ["localhost"], "port": "8080", "path": ["books", "999", "covers", "1"] }
+      },
+      "_comment": "기대: 404 (bookId 999 없음)\n실제(수정 전): 204 반환되며 삭제됨 ← 버그"
+    },
+    {
+      "name": "9. 정상 케이스 — 도서 A로 도서 A 표지 삭제",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "http://localhost:8080/books/1/covers/1", "host": ["localhost"], "port": "8080", "path": ["books", "1", "covers", "1"] }
+      },
+      "_comment": "기대: 204 No Content (정상 삭제)"
+    }
+  ]
+}

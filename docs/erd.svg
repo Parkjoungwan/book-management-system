@@ -1,0 +1,87 @@
+<svg viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Helvetica,Arial,sans-serif">
+  <title>Book Manager ERD — Spring 기준</title>
+  <desc>book.id ||--o&lt; book_cover.book_id, 책 필수 1, 표지 0..N</desc>
+  <rect width="980" height="470" fill="#f7f8fa"/>
+
+  <!-- relationship elbow: book.id (370,108) -> book_cover.book_id (560,156) -->
+  <polyline points="370,108 465,108 465,156 560,156" fill="none" stroke="#9aa7b3" stroke-width="1.5"/>
+
+  <!-- book end : mandatory one ( || ) at y=108 -->
+  <line x1="386" y1="96" x2="386" y2="120" stroke="#3a6896" stroke-width="2.2"/>
+  <line x1="394" y1="96" x2="394" y2="120" stroke="#3a6896" stroke-width="2.2"/>
+
+  <!-- book_cover end : zero-or-many ( o + crow's foot, 발이 테이블 쪽으로 벌어짐 ) at y=156 -->
+  <circle cx="530" cy="156" r="7" fill="#f7f8fa" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="144" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="156" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="168" stroke="#2e9e63" stroke-width="2.2"/>
+
+  <!-- cardinality label -->
+  <rect x="433" y="116" width="64" height="24" rx="5" fill="white" stroke="#e1e6f0"/>
+  <text x="465" y="133" font-size="12" font-weight="700" fill="#5a6173" text-anchor="middle">1 : 0..N</text>
+
+  <!-- ============ book table : x 40..370 ============ -->
+  <rect x="40" y="40" width="330" height="388" rx="6" fill="white" stroke="#e3e7ec" stroke-width="1.5"/>
+  <rect x="40" y="40" width="330" height="44" rx="6" fill="#3a6896"/>
+  <rect x="40" y="66" width="330" height="18" fill="#3a6896"/>
+  <text x="62" y="68" font-size="17" font-weight="700" fill="white" font-family="Consolas,monospace">book</text>
+
+  <rect x="40" y="84" width="330" height="48" fill="#eef2f7"/>
+  <text x="62" y="113" font-size="14" font-weight="700" fill="#e8912d" font-family="Consolas,monospace">🔑 id</text>
+  <text x="350" y="113" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">integer · PK</text>
+
+  <text x="62" y="161" font-size="14" fill="#1e2150" font-family="Consolas,monospace">title</text>
+  <text x="350" y="161" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">varchar · NN</text>
+
+  <rect x="40" y="180" width="330" height="48" fill="#fafbfc"/>
+  <text x="62" y="209" font-size="14" fill="#1e2150" font-family="Consolas,monospace">author</text>
+  <text x="350" y="209" font-size="12" fill="#aeb4c2" text-anchor="end" font-family="Consolas,monospace">varchar</text>
+
+  <text x="62" y="257" font-size="14" fill="#1e2150" font-family="Consolas,monospace">content</text>
+  <text x="350" y="257" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">text · NN</text>
+
+  <rect x="40" y="276" width="330" height="48" fill="#fafbfc"/>
+  <text x="62" y="305" font-size="14" fill="#1e2150" font-family="Consolas,monospace">cover_image_url</text>
+  <text x="350" y="305" font-size="12" fill="#aeb4c2" text-anchor="end" font-family="Consolas,monospace">CLOB</text>
+
+  <text x="62" y="353" font-size="14" fill="#1e2150" font-family="Consolas,monospace">created_at</text>
+  <text x="350" y="353" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">timestamp · NN</text>
+
+  <rect x="40" y="372" width="330" height="48" fill="#fafbfc"/>
+  <text x="62" y="401" font-size="14" fill="#1e2150" font-family="Consolas,monospace">updated_at</text>
+  <text x="350" y="401" font-size="12" fill="#aeb4c2" text-anchor="end" font-family="Consolas,monospace">timestamp</text>
+
+  <!-- ============ book_cover table : x 560..940 ============ -->
+  <rect x="560" y="40" width="380" height="388" rx="6" fill="white" stroke="#e3e7ec" stroke-width="1.5"/>
+  <rect x="560" y="40" width="380" height="44" rx="6" fill="#2e9e63"/>
+  <rect x="560" y="66" width="380" height="18" fill="#2e9e63"/>
+  <text x="582" y="68" font-size="17" font-weight="700" fill="white" font-family="Consolas,monospace">book_cover</text>
+
+  <rect x="560" y="84" width="380" height="48" fill="#eef7f1"/>
+  <text x="582" y="113" font-size="14" font-weight="700" fill="#e8912d" font-family="Consolas,monospace">🔑 id</text>
+  <text x="920" y="113" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">integer · PK</text>
+
+  <!-- book_id row highlighted -->
+  <rect x="560" y="132" width="380" height="48" fill="#eaf1fb"/>
+  <text x="582" y="161" font-size="14" font-weight="700" fill="#4f7bd9" font-family="Consolas,monospace">🔗 book_id</text>
+  <text x="920" y="161" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">integer · FK · NN</text>
+
+  <text x="582" y="209" font-size="14" fill="#1e2150" font-family="Consolas,monospace">image_url</text>
+  <text x="920" y="209" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">text · NN</text>
+
+  <rect x="560" y="228" width="380" height="48" fill="#fafbfc"/>
+  <text x="582" y="257" font-size="14" fill="#1e2150" font-family="Consolas,monospace">quality · size</text>
+  <text x="920" y="257" font-size="12" fill="#aeb4c2" text-anchor="end" font-family="Consolas,monospace">varchar</text>
+
+  <text x="582" y="305" font-size="14" fill="#1e2150" font-family="Consolas,monospace">output_format</text>
+  <text x="920" y="305" font-size="12" fill="#aeb4c2" text-anchor="end" font-family="Consolas,monospace">varchar</text>
+
+  <rect x="560" y="324" width="380" height="48" fill="#fafbfc"/>
+  <text x="582" y="353" font-size="14" fill="#1e2150" font-family="Consolas,monospace">is_active</text>
+  <text x="920" y="353" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">boolean · NN · false</text>
+
+  <text x="582" y="401" font-size="14" fill="#1e2150" font-family="Consolas,monospace">created_at</text>
+  <text x="920" y="401" font-size="12" fill="#7a8196" text-anchor="end" font-family="Consolas,monospace">timestamp · NN</text>
+
+  <text x="40" y="452" font-size="11.5" fill="#8a91a3" font-family="Calibri,sans-serif">관계  book.id ──||──o&lt;── book_cover.book_id   ·   책=필수 1, 표지=0..N   ·   cascade=ALL, orphanRemoval=true   ·   NN = NOT NULL</text>
+</svg>
