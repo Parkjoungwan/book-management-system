@@ -1,25 +1,24 @@
 package com.aivle.bookapp.service;
 
 import com.aivle.bookapp.domain.Book;
+import com.aivle.bookapp.domain.User;
 import com.aivle.bookapp.dto.BookCreateRequest;
 import com.aivle.bookapp.dto.BookResponse;
 import com.aivle.bookapp.dto.BookUpdateRequest;
 import com.aivle.bookapp.dto.CoverGenerateRequest;
-import com.aivle.bookapp.exception.BookNotFoundException;
 import com.aivle.bookapp.exception.OpenAiException;
 import com.aivle.bookapp.repository.BookRepository;
+import com.aivle.bookapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +29,7 @@ import java.util.Map;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final UserRepository userRepository;
     private final RestTemplate restTemplate;
 
     @Transactional(readOnly = true)
@@ -42,22 +42,31 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public BookResponse findById(Long id) {
-        return BookResponse.from(getBookOrThrow(id));
+        return BookResponse.from(bookRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "도서를 찾을 수 없습니다."
+                )));
     }
 
     @Transactional
-    public BookResponse create(BookCreateRequest request) {
+    public BookResponse create(BookCreateRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
+
         Book book = Book.builder()
                 .title(request.title())
                 .author(request.author())
                 .content(request.content())
+                .user(user)
                 .build();
+
         return BookResponse.from(bookRepository.save(book));
     }
 
     @Transactional
-    public BookResponse update(Long id, BookUpdateRequest request) {
-        Book book = getBookOrThrow(id);
+    public BookResponse update(Long id, BookUpdateRequest request, Long userId) {
+        Book book = getOwnedBookOrThrow(id, userId);
 
         if (request.title() != null) book.setTitle(request.title());
         if (request.author() != null) book.setAuthor(request.author());
@@ -67,23 +76,21 @@ public class BookService {
     }
 
     @Transactional
-    public BookResponse updateCover(Long id, String coverImageUrl) {
-        Book book = getBookOrThrow(id);
+    public BookResponse updateCover(Long id, String coverImageUrl, Long userId) {
+        Book book = getOwnedBookOrThrow(id, userId);
         book.setCoverImageUrl(coverImageUrl);
         return BookResponse.from(bookRepository.save(book));
     }
 
     @Transactional
-    public void delete(Long id) {
-        if (!bookRepository.existsById(id)) {
-            throw new BookNotFoundException(id);
-        }
-        bookRepository.deleteById(id);
+    public void delete(Long id, Long userId) {
+        Book book = getOwnedBookOrThrow(id, userId);
+        bookRepository.delete(book);
     }
 
     @Transactional
-    public BookResponse generateAndSaveCover(Long id, CoverGenerateRequest request) {
-        Book book = getBookOrThrow(id);
+    public BookResponse generateAndSaveCover(Long id, CoverGenerateRequest request, Long userId) {
+        Book book = getOwnedBookOrThrow(id, userId);
         String prompt = buildImagePrompt(book, request.userPrompt());
         String b64 = callOpenAi(request.apiKey(), prompt, request.size(), request.quality(), request.outputFormat());
         String format = request.outputFormat() != null ? request.outputFormat() : "png";
@@ -147,8 +154,11 @@ public class BookService {
         }
     }
 
-    private Book getBookOrThrow(Long id) {
-        return bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException(id));
+    private Book getOwnedBookOrThrow(Long id, Long userId) {
+        return bookRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "본인이 등록한 도서만 접근할 수 있습니다."
+                ));
     }
 }

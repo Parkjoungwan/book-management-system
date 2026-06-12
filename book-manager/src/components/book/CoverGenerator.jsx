@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BOOKS_URL } from '../../constants/api'
+import { authFetch } from '../../utils/authFetch'
 
 export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIsGenerating }) {
   const [apiKey, setApiKey] = useState(import.meta.env.VITE_OPENAI_API_KEY || '')
@@ -24,7 +25,7 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
     setPreviewUrl(null)
 
     try {
-      const res = await fetch(`${BOOKS_URL}/${book.id}/cover/generate`, {
+      const res = await authFetch(`${BOOKS_URL}/${book.id}/cover/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey, userPrompt, size, quality, outputFormat }),
@@ -49,7 +50,7 @@ export default function CoverGenerator({ book, onCoverSaved, isGenerating, setIs
     setIsSaving(true)
     setError('')
     try {
-      const res = await fetch(`${BOOKS_URL}/${book.id}/covers`, {
+      const res = await authFetch(`${BOOKS_URL}/${book.id}/covers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

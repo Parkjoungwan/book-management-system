@@ -4,6 +4,7 @@ import { BOOKS_URL } from '../constants/api'
 import CoverGenerator from '../components/book/CoverGenerator'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
+import { authFetch } from '../utils/authFetch'
 
 function formatDate(iso) {
   if (!iso) return '-'
@@ -29,6 +30,8 @@ export default function BookDetailPage() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(true)
   const generatorInitialized = useRef(false)
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const isOwner = Boolean(user?.userId && book?.ownerId && user.userId === book.ownerId)
 
   useEffect(() => {
     if (book && !generatorInitialized.current) {
@@ -42,10 +45,21 @@ export default function BookDetailPage() {
     const load = async () => {
       try {
         const res = await fetch(`${BOOKS_URL}/${id}`)
-        if (res.status === 404) throw new Error('해당 도서를 찾을 수 없습니다.')
-        if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
-        const data = await res.json()
-        setBook(data)
+
+      if (res.status === 403) {
+        throw new Error('본인이 등록한 도서만 상세 조회할 수 있습니다.')
+      }
+
+      if (res.status === 404) {
+        throw new Error('해당 도서를 찾을 수 없습니다.')
+      }
+
+      if (!res.ok) {
+        throw new Error(`서버 오류 (${res.status})`)
+      }
+
+      const data = await res.json()
+      setBook(data) 
       } catch (err) {
         setError(err.message)
       } finally {
@@ -57,10 +71,10 @@ export default function BookDetailPage() {
 
   // 표지 이력 갤러리 불러오기
   useEffect(() => {
-    if (!id) return
+    if (!id || !isOwner) return
     const loadCovers = async () => {
       try {
-        const res = await fetch(`${BOOKS_URL}/${id}/covers`)
+        const res = await authFetch(`${BOOKS_URL}/${id}/covers`)
         if (!res.ok) return 
         const data = await res.json()
         setCovers(data)
@@ -69,16 +83,18 @@ export default function BookDetailPage() {
       }
     }
     loadCovers()
-  }, [id])
+  }, [id, isOwner])
 
   // 도서 삭제
   const handleDelete = async () => {
     if (!whileGenerating()) return
     if (!window.confirm(`"${book.title}" 도서를 삭제하시겠습니까?`)) return
     try {
-      const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제에 실패했습니다.')
-      navigate('/')
+      const res = await authFetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' }) 
+      // http://localhost:3000/books/1 DELETE 요청 보내고 응답 오면 res에 저장
+      if (!res.ok) throw new Error('삭제에 실패했습니다.')  
+        // ok 아닐 경우 throw로 에러 강제 발생 -> catch로 
+      navigate('/') // 메인 목록 페이지로 이동
     } catch (err) {
       setError(err.message)
     }
@@ -95,7 +111,7 @@ export default function BookDetailPage() {
     if (galleryActionId) return
     setGalleryActionId(coverId)
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `${BOOKS_URL}/${id}/covers/${coverId}/activate`,
         { method: 'PATCH' }
       )
@@ -124,7 +140,7 @@ export default function BookDetailPage() {
 
     setGalleryActionId(cover.id)
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `${BOOKS_URL}/${id}/covers/${cover.id}`,
         { method: 'DELETE' }
       )
@@ -184,7 +200,7 @@ export default function BookDetailPage() {
           )}
 
           {/* 표지 이력 갤러리 (토글) */}
-          {covers.length > 0 && (
+          {isOwner && covers.length > 0 && (
             <div className="generator-toggle">
               <button
                 className="generator-toggle-btn"
@@ -235,6 +251,7 @@ export default function BookDetailPage() {
           )}
 
           {/* AI 표지 생성기 (토글) */}
+          {isOwner && (
           <div className="generator-toggle">
             <button
               className="generator-toggle-btn"
@@ -256,6 +273,7 @@ export default function BookDetailPage() {
               />
             </div>
           </div>
+          )}
         </div>
 
         {/* 오른쪽: 도서 정보 */}
@@ -280,6 +298,7 @@ export default function BookDetailPage() {
           </div>
 
           {/* 액션 버튼 */}
+          {isOwner && (
           <div className="book-detail-actions">
             <Link
               to={`/books/${id}/edit`}
@@ -297,6 +316,7 @@ export default function BookDetailPage() {
               🗑️ 삭제
             </button>
           </div>
+          )}
         </div>
       </div>
 

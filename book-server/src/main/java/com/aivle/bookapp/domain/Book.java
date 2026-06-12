@@ -37,6 +37,10 @@ public class Book {
     @Column(columnDefinition = "CLOB")
     private String coverImageUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

@@ -4,6 +4,7 @@ import { BOOKS_URL } from '../constants/api'
 import BookCard from '../components/book/BookCard'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
+import { authFetch } from '../utils/authFetch'
 
 export default function BooksPage() {
   const [books, setBooks] = useState([])
@@ -16,6 +17,8 @@ export default function BooksPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
   const pageSize = 8
+  const isLoggedIn = Boolean(localStorage.getItem('token'))
+  const currentUserId = JSON.parse(localStorage.getItem('user') || 'null')?.userId
 
   useEffect(() => {
     const load = async () => {
@@ -58,6 +61,7 @@ export default function BooksPage() {
   }
 
   const filtered = books
+  const selectableBooks = filtered.filter(book => book.ownerId === currentUserId)
 
   // 개별 도서 선택 / 선택 해제
   const handleSelectBook = (bookId) => {
@@ -70,7 +74,7 @@ export default function BooksPage() {
 
   // 현재 화면에 보이는 검색 결과 기준 전체 선택 / 전체 해제
   const handleSelectAll = () => {
-    const filteredIds = filtered.map(book => book.id)
+    const filteredIds = selectableBooks.map(book => book.id)
     const isAllSelected = filteredIds.every(id => selectedIds.includes(id))
 
     if (isAllSelected) {
@@ -81,49 +85,49 @@ export default function BooksPage() {
   }
 
   // 선택한 도서 다중 삭제
-    const handleDeleteSelected = async () => {
-      if (selectedIds.length === 0) {
-        window.alert('삭제할 도서를 선택해주세요.')
-        return
-      }
+  const handleDeleteSelected = async () => {
+  if (selectedIds.length === 0) {
+    window.alert('삭제할 도서를 선택해주세요.')
+    return
+  }
 
-      const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
-      if (!ok) return
+  const ok = window.confirm(`${selectedIds.length}개의 도서를 삭제하시겠습니까?`)
+  if (!ok) return
 
-      try {
-        for (const id of selectedIds) {
-          const res = await fetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
-          if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
-        }
-
-        const nextTotalElements = totalElements - selectedIds.length
-        const nextTotalPages = Math.ceil(nextTotalElements / pageSize)
-        const nextPage = Math.min(page, Math.max(nextTotalPages - 1, 0))
-
-        setSelectedIds([])
-        setTotalElements(nextTotalElements)
-        setTotalPages(nextTotalPages)
-
-        if (nextPage !== page) {
-          setPage(nextPage)
-        } else {
-          const searchParam = appliedSearch ? `&search=${encodeURIComponent(appliedSearch)}` : ''
-          const res = await fetch(
-            `${BOOKS_URL}?page=${nextPage}&size=${pageSize}&sort=createdAt,desc${searchParam}`
-          )
-          if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
-          const data = await res.json()
-
-          setBooks(data.content)
-          setTotalPages(data.totalPages)
-          setTotalElements(data.totalElements)
-        }
-
-        window.alert('선택한 도서가 삭제되었습니다.')
-      } catch (err) {
-        setError(err.message)
-      }
+  try {
+    for (const id of selectedIds) {
+      const res = await authFetch(`${BOOKS_URL}/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`도서(${id}) 삭제에 실패했습니다.`)
     }
+
+    const nextTotalElements = totalElements - selectedIds.length
+    const nextTotalPages = Math.ceil(nextTotalElements / pageSize)
+    const nextPage = Math.min(page, Math.max(nextTotalPages - 1, 0))
+
+    setSelectedIds([])
+    setTotalElements(nextTotalElements)
+    setTotalPages(nextTotalPages)
+
+    if (nextPage !== page) {
+      setPage(nextPage)
+    } else {
+      const searchParam = appliedSearch ? `&search=${encodeURIComponent(appliedSearch)}` : ''
+      const res = await fetch(
+        `${BOOKS_URL}?page=${nextPage}&size=${pageSize}&sort=createdAt,desc${searchParam}`
+      )
+      if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
+      const data = await res.json()
+
+      setBooks(data.content)
+      setTotalPages(data.totalPages)
+      setTotalElements(data.totalElements)
+    }
+
+    window.alert('선택한 도서가 삭제되었습니다.')
+  } catch (err) {
+    setError(err.message)
+  }
+}
 
   return (
     <main className="page">
@@ -132,7 +136,7 @@ export default function BooksPage() {
         <p className="page-subtitle">
           {!isLoading && !error && `총 ${totalElements}권의 도서가 있습니다`}
         </p>
-        <Link to="/books/new" className="btn btn-primary">
+        <Link to={isLoggedIn ? '/books/new' : '/login'} className="btn btn-primary">
           + 새 도서 등록
         </Link>
       </div>
@@ -161,7 +165,7 @@ export default function BooksPage() {
       )}
 
       {/* 다중 선택 삭제 영역 */}
-      {!isLoading && !error && filtered.length > 0 && (
+      {!isLoading && !error && selectableBooks.length > 0 && (
         <div
           style={{
             display: 'flex',
@@ -181,8 +185,8 @@ export default function BooksPage() {
             <input
               type="checkbox"
               checked={
-                filtered.length > 0 &&
-                filtered.every(book => selectedIds.includes(book.id))
+                selectableBooks.length > 0 &&
+                selectableBooks.every(book => selectedIds.includes(book.id))
               }
               onChange={handleSelectAll}
             />
@@ -244,25 +248,27 @@ export default function BooksPage() {
                 position: 'relative',
               }}
             >
-              <label
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  zIndex: 10,
-                  background: 'white',
-                  borderRadius: 8,
-                  padding: '6px 8px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-                  cursor: 'pointer',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(book.id)}
-                  onChange={() => handleSelectBook(book.id)}
-                />
-              </label>
+              {book.ownerId === currentUserId && (
+                <label
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    zIndex: 10,
+                    background: 'white',
+                    borderRadius: 8,
+                    padding: '6px 8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(book.id)}
+                    onChange={() => handleSelectBook(book.id)}
+                  />
+                </label>
+              )}
 
               <BookCard book={book} />
             </div>

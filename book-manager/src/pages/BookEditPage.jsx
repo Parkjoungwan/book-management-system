@@ -4,10 +4,12 @@ import { BOOKS_URL } from '../constants/api'
 import BookForm from '../components/book/BookForm'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
+import { authFetch } from '../utils/authFetch'
 
 export default function BookEditPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const currentUserId = JSON.parse(localStorage.getItem('user') || 'null')?.userId
 
   const [book, setBook] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -17,11 +19,27 @@ export default function BookEditPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${BOOKS_URL}/${id}`) // 수정 페이지에 들어오면 기존 도서 정보를 먼저 불러옵니다. 그래야 입력 폼에 기존 제목, 저자, 내용을 채워 넣을 수 있습니다.
-        if (res.status === 404) throw new Error('해당 도서를 찾을 수 없습니다.')
-        if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
-        const data = await res.json() // await 두 번 -> 응답 -> 데이터
-        setBook(data)
+        const res = await authFetch(`${BOOKS_URL}/${id}`)
+
+      if (res.status === 403) {
+        throw new Error('본인이 등록한 도서만 수정할 수 있습니다.')
+      }
+
+      if (res.status === 404) {
+        throw new Error('해당 도서를 찾을 수 없습니다.')
+      }
+
+      if (!res.ok) {
+        throw new Error(`서버 오류 (${res.status})`)
+      }
+
+      const data = await res.json()
+      if (data.ownerId !== currentUserId) {
+        window.alert('본인이 등록한 도서만 수정할 수 있습니다.')
+        navigate(`/books/${id}`, { replace: true })
+        return
+      }
+      setBook(data)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -29,12 +47,12 @@ export default function BookEditPage() {
       }
     }
     load()
-  }, [id])
+  }, [id, navigate, currentUserId])
 
   // 수정 제출 — 변경된 필드만 PATCH
   const handleSubmit = async (formData) => {
     try {
-      const res = await fetch(`${BOOKS_URL}/${id}`, {
+      const res = await authFetch(`${BOOKS_URL}/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -14,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.aivle.bookapp.domain.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
@@ -37,8 +40,11 @@ public class BookController {
 
     // POST /books - 등록 (201 Created)
     @PostMapping
-    public ResponseEntity<BookResponse> create(@Valid @RequestBody BookCreateRequest request) {
-        BookResponse saved = bookService.create(request);
+    public ResponseEntity<BookResponse> create(
+            @Valid @RequestBody BookCreateRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        BookResponse saved = bookService.create(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -46,33 +52,39 @@ public class BookController {
     @PatchMapping("/{id}")
     public ResponseEntity<BookResponse> update(
             @PathVariable Long id,
-            @RequestBody BookUpdateRequest request
+            @RequestBody BookUpdateRequest request,
+            @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(bookService.update(id, request));
+        return ResponseEntity.ok(bookService.update(id, request, user.getId()));
     }
 
     // PATCH /books/{id}/cover - AI 표지 URL 저장
     @PatchMapping("/{id}/cover")
     public ResponseEntity<BookResponse> updateCover(
             @PathVariable Long id,
-            @RequestBody CoverUpdateRequest request
+            @RequestBody CoverUpdateRequest request,
+            @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(bookService.updateCover(id, request.coverImageUrl()));
+        return ResponseEntity.ok(bookService.updateCover(id, request.coverImageUrl(), user.getId()));
     }
 
     // POST /books/{id}/cover/generate - AI 표지 생성 및 DB 저장
     @PostMapping("/{id}/cover/generate")
     public ResponseEntity<BookResponse> generateCover(
             @PathVariable Long id,
-            @Valid @RequestBody CoverGenerateRequest request
+            @Valid @RequestBody CoverGenerateRequest request,
+            @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(bookService.generateAndSaveCover(id, request));
+        return ResponseEntity.ok(bookService.generateAndSaveCover(id, request, user.getId()));
     }
 
     // DELETE /books/{id} - 삭제 (204 No Content)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        bookService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user
+    ) {
+        bookService.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

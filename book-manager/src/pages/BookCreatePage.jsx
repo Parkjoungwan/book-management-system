@@ -1,13 +1,14 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { BOOKS_URL } from '../constants/api'
 import BookForm from '../components/book/BookForm'
+import { authFetch } from '../utils/authFetch'
 
 export default function BookCreatePage() {
   const navigate = useNavigate()
 
   const handleSubmit = async (formData) => {
     const now = new Date().toISOString()
-    const res = await fetch(BOOKS_URL, {
+    const res = await authFetch(BOOKS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
