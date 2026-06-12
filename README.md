@@ -3,6 +3,20 @@
 
 ---
 
+## 팀원 및 R&R
+
+| 이름 | GitHub | 역할 | 주요 기여 |
+|------|--------|------|-----------|
+| 박종완 | [@Parkjoungwan](https://github.com/Parkjoungwan) | 조장 · PM · 풀스택 | Spring Boot 백엔드 초기 구현, DTO 리팩토링, 서버사이드 검색(프론트+백), AI 표지 백엔드 프록시, 표지 이력 백엔드, 다중 삭제 버그 수정, gitignore 정리, 전체 PR 머지 관리, README·ERD·API 명세서 문서화 |
+| 김정욱 | [@JeongUk00](https://github.com/JeongUk00) | 프론트 · 로그인 | 로그인·JWT 인증 전체 구현(feat/login), JWT 시크릿 환경변수 분리, 페이지네이션 프론트 구현, 입력 검증(수정 중 이탈 경고·글자 수 제한) |
+| 김영진 | [@OMG4325](https://github.com/OMG4325) | 프론트 · 백엔드 | CoverGenerator 초기 구현, UX 개선(userPrompt·CSS), 소유권 검증 버그 수정, 표지 이력 입력 제한 UX |
+| 권수민 | [@sumin55](https://github.com/sumin55) | 프론트 | 다중 선택 삭제 기능, 수정 완료 알림, 도서 폼 검증·취소 버튼 오류 수정, 삭제 후 페이지네이션 갱신 버그 수정 |
+| 김수린 | [@surinrtf](https://github.com/surinrtf) | 프론트 | 표지 이력 갤러리 프론트 전체 구현(feat/cover-history-frontend), 표지 생성·저장 모달 UI |
+| 고건호 | [@kkh921214](https://github.com/kkh921214) | 백엔드 · 서기 · 문서 | 백엔드 전역 예외 처리 구현(`GlobalExceptionHandler`·`BookNotFoundException`·`ErrorResponse`), `BookForm.jsx` 버튼 UI, PR 리뷰, 회의록·발표 자료 작업 |
+| 김주아 | [@gef525](https://github.com/gef525) | 백엔드 | H2 DB 영속화 설정, Jackson 날짜 직렬화, 수정 페이지 표지 이미지 표시 |
+
+---
+
 ## 기술 스택
 
 | 분류 | 기술 |
