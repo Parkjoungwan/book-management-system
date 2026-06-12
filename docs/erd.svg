@@ -10,11 +10,11 @@
   <line x1="386" y1="96" x2="386" y2="120" stroke="#3a6896" stroke-width="2.2"/>
   <line x1="394" y1="96" x2="394" y2="120" stroke="#3a6896" stroke-width="2.2"/>
 
-  <!-- book_cover end : zero-or-many ( o + crow's foot ) at y=156 -->
-  <circle cx="540" cy="156" r="7" fill="#f7f8fa" stroke="#2e9e63" stroke-width="2.2"/>
-  <line x1="560" y1="156" x2="548" y2="144" stroke="#2e9e63" stroke-width="2.2"/>
-  <line x1="560" y1="156" x2="548" y2="156" stroke="#2e9e63" stroke-width="2.2"/>
-  <line x1="560" y1="156" x2="548" y2="168" stroke="#2e9e63" stroke-width="2.2"/>
+  <!-- book_cover end : zero-or-many ( o + crow's foot, 발이 테이블 쪽으로 벌어짐 ) at y=156 -->
+  <circle cx="530" cy="156" r="7" fill="#f7f8fa" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="144" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="156" stroke="#2e9e63" stroke-width="2.2"/>
+  <line x1="544" y1="156" x2="560" y2="168" stroke="#2e9e63" stroke-width="2.2"/>
 
   <!-- cardinality label -->
   <rect x="433" y="116" width="64" height="24" rx="5" fill="white" stroke="#e1e6f0"/>
